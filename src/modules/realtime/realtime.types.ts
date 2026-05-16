@@ -9,10 +9,12 @@ export type AuthenticatedSocket = Socket & {
 
 export type RealtimeMessage = {
   id: string;
+  sequence: string;
   senderId: string;
   receiverId: string;
   encryptedContent: string;
   encryptionIv: string;
+  encryptionVersion: string;
   createdAt: Date;
 };
 

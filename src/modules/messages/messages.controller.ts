@@ -1,7 +1,7 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { CurrentUser } from '../../common/decorators/auth.decorators';
 import type { AuthUser } from '../auth/auth.types';
-import { SendMessageDto } from './messages.dto';
+import { ListMessagesQueryDto, SendMessageDto } from './messages.dto';
 import { MessagesService } from './messages.service';
 
 @Controller('messages')
@@ -9,8 +9,12 @@ export class MessagesController {
   constructor(private readonly messagesService: MessagesService) {}
 
   @Get(':friendId')
-  list(@CurrentUser() user: AuthUser, @Param('friendId') friendId: string) {
-    return this.messagesService.listConversation(user.sub, friendId);
+  list(
+    @CurrentUser() user: AuthUser,
+    @Param('friendId') friendId: string,
+    @Query() query: ListMessagesQueryDto,
+  ) {
+    return this.messagesService.listConversation(user.sub, friendId, query);
   }
 
   @Post(':friendId')
@@ -25,5 +29,13 @@ export class MessagesController {
       dto.encryptedContent,
       dto.encryptionIv,
     );
+  }
+
+  @Post(':friendId/read')
+  markRead(
+    @CurrentUser() user: AuthUser,
+    @Param('friendId') friendId: string,
+  ) {
+    return this.messagesService.markConversationRead(user.sub, friendId);
   }
 }

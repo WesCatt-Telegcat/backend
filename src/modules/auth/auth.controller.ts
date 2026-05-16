@@ -6,6 +6,7 @@ import {
   LoginDto,
   RegisterDto,
   SendCodeDto,
+  UpdateEncryptionKeyDto,
 } from './auth.dto';
 
 @Controller('auth')
@@ -33,5 +34,13 @@ export class AuthController {
   @Get('me')
   me(@CurrentUser() user: AuthUser) {
     return this.authService.me(user.sub);
+  }
+
+  @Post('me/encryption-key')
+  updateEncryptionKey(
+    @CurrentUser() user: AuthUser,
+    @Body() dto: UpdateEncryptionKeyDto,
+  ) {
+    return this.authService.updateEncryptionKey(user.sub, dto);
   }
 }

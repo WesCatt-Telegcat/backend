@@ -10,7 +10,12 @@ import { MailService } from '../mail/mail.service';
 import { JwtService } from './jwt.service';
 import { PasswordService } from './password.service';
 import { AuthUser, SafeUser } from './auth.types';
-import { LoginDto, RegisterDto, SendCodeDto } from './auth.dto';
+import {
+  LoginDto,
+  RegisterDto,
+  SendCodeDto,
+  UpdateEncryptionKeyDto,
+} from './auth.dto';
 
 @Injectable()
 export class AuthService {
@@ -121,6 +126,26 @@ export class AuthService {
     }
 
     return this.toSafeUser(user);
+  }
+
+  async updateEncryptionKey(userId: string, dto: UpdateEncryptionKeyDto) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+
+    if (!user) {
+      throw new UnauthorizedException('用户不存在');
+    }
+
+    const updatedUser =
+      dto.encryptionPublicKey === user.encryptionPublicKey
+        ? user
+        : await this.prisma.user.update({
+            where: { id: userId },
+            data: {
+              encryptionPublicKey: dto.encryptionPublicKey,
+            },
+          });
+
+    return this.toSafeUser(updatedUser);
   }
 
   private createAuthResponse(user: {

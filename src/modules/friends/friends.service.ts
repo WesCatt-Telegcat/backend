@@ -56,7 +56,11 @@ export class FriendsService {
           friendCode: friend.friendCode,
           encryptionPublicKey: friend.encryptionPublicKey,
           online: this.realtimeService.isOnline(friend.id),
-          lastMessage: lastMessage ? '加密消息' : '还没有消息',
+          lastMessage: lastMessage ? '' : '还没有消息',
+          lastMessageEncryptedContent: lastMessage?.encryptedContent ?? null,
+          lastMessageEncryptionIv: lastMessage?.encryptionIv ?? null,
+          lastMessageEncryptionVersion: lastMessage?.encryptionVersion ?? null,
+          lastMessageSenderId: lastMessage?.senderId ?? null,
           lastMessageAt: lastMessage?.createdAt ?? friendship.createdAt,
           unread,
         };
@@ -108,6 +112,19 @@ export class FriendsService {
       this.realtimeService.emitFriendsChanged([userId, target.id]);
 
       return { status: 'ACCEPTED' };
+    }
+
+    const outgoingRequest = await this.prisma.friendRequest.findUnique({
+      where: {
+        requesterId_addresseeId: {
+          requesterId: userId,
+          addresseeId: target.id,
+        },
+      },
+    });
+
+    if (outgoingRequest?.status === 'PENDING') {
+      throw new ConflictException('好友申请已发送，请等待对方处理');
     }
 
     const request = await this.prisma.friendRequest.upsert({

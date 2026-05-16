@@ -46,3 +46,9 @@ export class LoginDto {
   @Length(20, 5000)
   encryptionPublicKey?: string;
 }
+
+export class UpdateEncryptionKeyDto {
+  @IsString()
+  @Length(20, 5000)
+  encryptionPublicKey: string;
+}

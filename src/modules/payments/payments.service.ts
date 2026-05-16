@@ -66,20 +66,31 @@ export class PaymentsService {
       },
     });
 
-    const providerResult =
-      dto.provider === 'ALIPAY'
-        ? await this.createAlipayOrder(order)
-        : await this.createWeChatOrder(order);
+    try {
+      const providerResult =
+        dto.provider === 'ALIPAY'
+          ? await this.createAlipayOrder(order)
+          : await this.createWeChatOrder(order);
 
-    const updatedOrder = await this.prisma.donationOrder.update({
-      where: { id: order.id },
-      data: {
-        qrContent: providerResult.qrContent,
-        qrContentType: providerResult.qrContentType,
-      },
-    });
+      const updatedOrder = await this.prisma.donationOrder.update({
+        where: { id: order.id },
+        data: {
+          qrContent: providerResult.qrContent,
+          qrContentType: providerResult.qrContentType,
+        },
+      });
 
-    return this.toOrderResponse(updatedOrder);
+      return this.toOrderResponse(updatedOrder);
+    } catch (error) {
+      await this.prisma.donationOrder.update({
+        where: { id: order.id },
+        data: {
+          status: 'FAILED',
+        },
+      });
+
+      throw error;
+    }
   }
 
   async getOrder(user: AuthUser, orderId: string) {
@@ -489,7 +500,7 @@ export class PaymentsService {
     const inlineValue = process.env[valueKey]?.trim();
 
     if (inlineValue) {
-      return inlineValue.includes('BEGIN') ? inlineValue : inlineValue.replace(/\\n/g, '\n');
+      return inlineValue.replace(/\\n/g, '\n');
     }
 
     const configPath = process.env[pathKey]?.trim();
