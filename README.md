@@ -70,6 +70,20 @@ $ mau deploy
 
 With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
 
+## Docker Deploy
+
+Make sure these exist in the `backend` project root on the server:
+
+- `.env.production`
+- `docker-compose.yml`
+- `Dockerfile`
+
+Run:
+
+```bash
+docker compose up -d --build
+```
+
 ## Resources
 
 Check out a few resources that may come in handy when working with NestJS:
