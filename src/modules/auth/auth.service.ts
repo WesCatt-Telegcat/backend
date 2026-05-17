@@ -17,6 +17,8 @@ import {
   UpdateEncryptionKeyDto,
 } from './auth.dto';
 
+const ENCRYPTION_KEY_VERSION = 'v3';
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -89,7 +91,7 @@ export class AuthService {
         encryptedPrivateKey: dto.encryptedPrivateKey,
         encryptionKeySalt: dto.encryptionKeySalt,
         encryptionKeyIv: dto.encryptionKeyIv,
-        encryptionKeyVersion: dto.encryptionKeyVersion ?? 'v1',
+        encryptionKeyVersion: dto.encryptionKeyVersion ?? ENCRYPTION_KEY_VERSION,
       },
     });
 
@@ -218,7 +220,8 @@ export class AuthService {
       (dto.encryptedPrivateKey ?? null) !== user.encryptedPrivateKey ||
       (dto.encryptionKeySalt ?? null) !== user.encryptionKeySalt ||
       (dto.encryptionKeyIv ?? null) !== user.encryptionKeyIv ||
-      (dto.encryptionKeyVersion ?? 'v1') !== (user.encryptionKeyVersion ?? 'v1')
+      (dto.encryptionKeyVersion ?? ENCRYPTION_KEY_VERSION) !==
+        (user.encryptionKeyVersion ?? ENCRYPTION_KEY_VERSION)
     );
   }
 
@@ -236,7 +239,7 @@ export class AuthService {
       encryptedPrivateKey: dto.encryptedPrivateKey ?? null,
       encryptionKeySalt: dto.encryptionKeySalt ?? null,
       encryptionKeyIv: dto.encryptionKeyIv ?? null,
-      encryptionKeyVersion: dto.encryptionKeyVersion ?? 'v1',
+      encryptionKeyVersion: dto.encryptionKeyVersion ?? ENCRYPTION_KEY_VERSION,
     };
   }
 
