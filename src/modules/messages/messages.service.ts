@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { PushService } from '../push/push.service';
 import { FriendsService } from '../friends/friends.service';
 import { RealtimeService } from '../realtime/realtime.service';
 import { ListMessagesQueryDto, MarkMessagesReadDto } from './messages.dto';
@@ -17,6 +18,7 @@ export class MessagesService {
     private readonly prisma: PrismaService,
     private readonly friendsService: FriendsService,
     private readonly realtimeService: RealtimeService,
+    private readonly pushService: PushService,
   ) {}
 
   async listConversation(
@@ -160,6 +162,10 @@ export class MessagesService {
     encryptionIv: string,
   ) {
     const friend = await this.prisma.user.findUnique({ where: { id: friendId } });
+    const sender = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { name: true },
+    });
 
     if (!friend) {
       throw new NotFoundException('好友不存在');
@@ -186,6 +192,11 @@ export class MessagesService {
       encryptedContent: message.encryptedContent,
       encryptionIv: message.encryptionIv,
       encryptionVersion: message.encryptionVersion,
+    });
+    await this.pushService.sendNewMessageNotification({
+      recipientUserId: friendId,
+      senderId: userId,
+      senderName: sender?.name ?? 'Telecat',
     });
 
     return {

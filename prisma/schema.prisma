@@ -52,6 +52,7 @@ model User {
   sentMessages           Message[]       @relation("SentMessages")
   receivedMessages       Message[]       @relation("ReceivedMessages")
   donationOrders         DonationOrder[]
+  pushSubscriptions      PushSubscription[]
 }
 
 model VerificationCode {
@@ -132,4 +133,22 @@ model DonationOrder {
 
   @@index([userId, createdAt])
   @@index([status, createdAt])
+}
+
+model PushSubscription {
+  id            String   @id @default(cuid())
+  userId        String
+  endpointHash  String   @unique
+  endpoint      String   @db.Text
+  p256dh        String   @db.Text
+  auth          String
+  expirationTime BigInt?
+  userAgent     String?  @db.Text
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  lastUsedAt    DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, updatedAt])
 }

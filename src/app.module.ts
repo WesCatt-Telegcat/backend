@@ -10,6 +10,7 @@ import { FriendsModule } from './modules/friends/friends.module';
 import { MessagesModule } from './modules/messages/messages.module';
 import { PaymentsModule } from './modules/payments/payments.module';
 import { PrismaModule } from './modules/prisma/prisma.module';
+import { PushModule } from './modules/push/push.module';
 import { RealtimeModule } from './modules/realtime/realtime.module';
 
 @Module({
@@ -17,6 +18,7 @@ import { RealtimeModule } from './modules/realtime/realtime.module';
     PrismaModule,
     AuthModule,
     RealtimeModule,
+    PushModule,
     FriendsModule,
     MessagesModule,
     PaymentsModule,
