@@ -11,11 +11,19 @@ import { JwtService } from '../auth/jwt.service';
 import { RealtimeService } from './realtime.service';
 import type { AuthenticatedSocket } from './realtime.types';
 
+function readSocketTimeout(value: string | undefined, fallback: number) {
+  const parsed = Number(value ?? '');
+
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
 @WebSocketGateway({
   cors: {
     origin: resolveCorsOrigins(),
     credentials: true,
   },
+  pingInterval: readSocketTimeout(process.env.SOCKET_PING_INTERVAL_MS, 25_000),
+  pingTimeout: readSocketTimeout(process.env.SOCKET_PING_TIMEOUT_MS, 60_000),
 })
 export class RealtimeGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect

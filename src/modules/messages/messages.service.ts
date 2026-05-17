@@ -129,6 +129,7 @@ export class MessagesService {
       items: messages.map((message) => ({
         id: message.id,
         sequence: this.encodeCursor(message.createdAt, message.id),
+        clientId: null,
         senderId: message.senderId,
         receiverId: message.receiverId,
         encryptedContent: message.encryptedContent,
@@ -154,6 +155,7 @@ export class MessagesService {
   async send(
     userId: string,
     friendId: string,
+    clientId: string | undefined,
     encryptedContent: string,
     encryptionIv: string,
   ) {
@@ -177,6 +179,7 @@ export class MessagesService {
     this.realtimeService.emitMessage({
       id: message.id,
       sequence: this.encodeCursor(message.createdAt, message.id),
+      clientId: clientId ?? null,
       senderId: message.senderId,
       receiverId: message.receiverId,
       createdAt: message.createdAt,
@@ -188,6 +191,7 @@ export class MessagesService {
     return {
       id: message.id,
       sequence: this.encodeCursor(message.createdAt, message.id),
+      clientId: clientId ?? null,
       senderId: message.senderId,
       receiverId: message.receiverId,
       encryptedContent: message.encryptedContent,

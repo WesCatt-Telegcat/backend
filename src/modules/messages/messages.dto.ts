@@ -12,6 +12,11 @@ import {
 } from 'class-validator';
 
 export class SendMessageDto {
+  @IsOptional()
+  @IsString()
+  @Length(8, 128)
+  clientId?: string;
+
   @IsString()
   @Length(1, 20000)
   encryptedContent: string;

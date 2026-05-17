@@ -10,6 +10,7 @@ export type AuthenticatedSocket = Socket & {
 export type RealtimeMessage = {
   id: string;
   sequence: string;
+  clientId: string | null;
   senderId: string;
   receiverId: string;
   encryptedContent: string;

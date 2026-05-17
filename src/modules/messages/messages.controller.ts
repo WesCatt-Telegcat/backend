@@ -30,6 +30,7 @@ export class MessagesController {
     return this.messagesService.send(
       user.sub,
       friendId,
+      dto.clientId,
       dto.encryptedContent,
       dto.encryptionIv,
     );
