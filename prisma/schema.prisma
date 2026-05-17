@@ -38,6 +38,10 @@ model User {
   friendCode   String   @unique
   avatar       String?
   encryptionPublicKey String? @db.Text
+  encryptedPrivateKey String? @db.Text
+  encryptionKeySalt   String?
+  encryptionKeyIv     String?
+  encryptionKeyVersion String? @default("v1")
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 

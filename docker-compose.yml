@@ -1,0 +1,12 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: telecat-backend
+    restart: unless-stopped
+    network_mode: host
+    env_file:
+      - .env.production
+    volumes:
+      - ./secrets:/app/secrets:ro

@@ -1,5 +1,15 @@
 import { Type } from 'class-transformer';
-import { IsIn, IsInt, IsOptional, IsString, Length, Max, Min } from 'class-validator';
+import {
+  ArrayMaxSize,
+  IsArray,
+  IsIn,
+  IsInt,
+  IsOptional,
+  IsString,
+  Length,
+  Max,
+  Min,
+} from 'class-validator';
 
 export class SendMessageDto {
   @IsString()
@@ -26,4 +36,16 @@ export class ListMessagesQueryDto {
   @Min(1)
   @Max(100)
   limit?: number;
+}
+
+export class MarkMessagesReadDto {
+  @IsOptional()
+  @IsString()
+  cursor?: string;
+
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(100)
+  @IsString({ each: true })
+  messageIds?: string[];
 }

@@ -13,4 +13,8 @@ export type SafeUser = {
   friendLink: string;
   avatar: string | null;
   encryptionPublicKey: string | null;
+  encryptedPrivateKey: string | null;
+  encryptionKeySalt: string | null;
+  encryptionKeyIv: string | null;
+  encryptionKeyVersion: string | null;
 };

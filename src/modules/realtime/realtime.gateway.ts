@@ -6,13 +6,14 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import type { Server } from 'socket.io';
+import { resolveCorsOrigins } from '../../common/utils/cors';
 import { JwtService } from '../auth/jwt.service';
 import { RealtimeService } from './realtime.service';
 import type { AuthenticatedSocket } from './realtime.types';
 
 @WebSocketGateway({
   cors: {
-    origin: process.env.FRONTEND_URL ?? 'http://localhost:2616',
+    origin: resolveCorsOrigins(),
     credentials: true,
   },
 })

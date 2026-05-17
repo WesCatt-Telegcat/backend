@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { FriendsService } from '../friends/friends.service';
 import { RealtimeService } from '../realtime/realtime.service';
-import { ListMessagesQueryDto } from './messages.dto';
+import { ListMessagesQueryDto, MarkMessagesReadDto } from './messages.dto';
 
 const DEFAULT_PAGE_SIZE = 30;
 
@@ -25,15 +25,6 @@ export class MessagesService {
     query: ListMessagesQueryDto,
   ) {
     await this.friendsService.ensureFriends(userId, friendId);
-
-    await this.prisma.message.updateMany({
-      where: {
-        senderId: friendId,
-        receiverId: userId,
-        readAt: null,
-      },
-      data: { readAt: new Date() },
-    });
 
     const where = {
       OR: [
@@ -144,6 +135,7 @@ export class MessagesService {
         encryptionIv: message.encryptionIv,
         encryptionVersion: message.encryptionVersion,
         createdAt: message.createdAt,
+        readAt: message.readAt,
         isMe: message.senderId === userId,
       })),
       page: {
@@ -202,23 +194,49 @@ export class MessagesService {
       encryptionIv: message.encryptionIv,
       encryptionVersion: message.encryptionVersion,
       createdAt: message.createdAt,
+      readAt: message.readAt,
       isMe: true,
     };
   }
 
-  async markConversationRead(userId: string, friendId: string) {
+  async markConversationRead(
+    userId: string,
+    friendId: string,
+    dto: MarkMessagesReadDto,
+  ) {
     await this.friendsService.ensureFriends(userId, friendId);
 
-    await this.prisma.message.updateMany({
-      where: {
-        senderId: friendId,
-        receiverId: userId,
-        readAt: null,
-      },
+    const cursor = this.decodeCursor(dto.cursor);
+    const messageIds = Array.from(new Set(dto.messageIds ?? []));
+    const where = {
+      senderId: friendId,
+      receiverId: userId,
+      readAt: null,
+      ...(messageIds.length
+        ? {
+            id: {
+              in: messageIds,
+            },
+          }
+        : cursor
+          ? {
+              OR: [
+                { createdAt: { lt: new Date(cursor.createdAt) } },
+                {
+                  createdAt: new Date(cursor.createdAt),
+                  id: { lte: cursor.id },
+                },
+              ],
+            }
+          : {}),
+    };
+
+    const result = await this.prisma.message.updateMany({
+      where,
       data: { readAt: new Date() },
     });
 
-    return { success: true };
+    return { success: true, count: result.count };
   }
 
   private encodeCursor(createdAt: Date, id: string) {

@@ -1,7 +1,11 @@
 import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { CurrentUser } from '../../common/decorators/auth.decorators';
 import type { AuthUser } from '../auth/auth.types';
-import { ListMessagesQueryDto, SendMessageDto } from './messages.dto';
+import {
+  ListMessagesQueryDto,
+  MarkMessagesReadDto,
+  SendMessageDto,
+} from './messages.dto';
 import { MessagesService } from './messages.service';
 
 @Controller('messages')
@@ -35,7 +39,8 @@ export class MessagesController {
   markRead(
     @CurrentUser() user: AuthUser,
     @Param('friendId') friendId: string,
+    @Body() dto: MarkMessagesReadDto,
   ) {
-    return this.messagesService.markConversationRead(user.sub, friendId);
+    return this.messagesService.markConversationRead(user.sub, friendId, dto);
   }
 }

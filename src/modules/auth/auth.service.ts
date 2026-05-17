@@ -86,6 +86,10 @@ export class AuthService {
         passwordHash: this.passwordService.hash(dto.password),
         friendCode: await this.createFriendCode(),
         encryptionPublicKey: dto.encryptionPublicKey,
+        encryptedPrivateKey: dto.encryptedPrivateKey,
+        encryptionKeySalt: dto.encryptionKeySalt,
+        encryptionKeyIv: dto.encryptionKeyIv,
+        encryptionKeyVersion: dto.encryptionKeyVersion ?? 'v1',
       },
     });
 
@@ -105,13 +109,10 @@ export class AuthService {
       throw new UnauthorizedException('邮箱或密码错误');
     }
 
-    if (
-      dto.encryptionPublicKey &&
-      dto.encryptionPublicKey !== user.encryptionPublicKey
-    ) {
+    if (this.shouldUpdateEncryptionPackage(user, dto)) {
       user = await this.prisma.user.update({
         where: { id: user.id },
-        data: { encryptionPublicKey: dto.encryptionPublicKey },
+        data: this.buildEncryptionPackageData(dto),
       });
     }
 
@@ -136,14 +137,12 @@ export class AuthService {
     }
 
     const updatedUser =
-      dto.encryptionPublicKey === user.encryptionPublicKey
-        ? user
-        : await this.prisma.user.update({
+      this.shouldUpdateEncryptionPackage(user, dto)
+        ? await this.prisma.user.update({
             where: { id: userId },
-            data: {
-              encryptionPublicKey: dto.encryptionPublicKey,
-            },
-          });
+            data: this.buildEncryptionPackageData(dto),
+          })
+        : user;
 
     return this.toSafeUser(updatedUser);
   }
@@ -155,6 +154,10 @@ export class AuthService {
     friendCode: string;
     avatar: string | null;
     encryptionPublicKey: string | null;
+    encryptedPrivateKey: string | null;
+    encryptionKeySalt: string | null;
+    encryptionKeyIv: string | null;
+    encryptionKeyVersion: string | null;
   }) {
     const payload: AuthUser = {
       sub: user.id,
@@ -176,6 +179,10 @@ export class AuthService {
     friendCode: string;
     avatar: string | null;
     encryptionPublicKey: string | null;
+    encryptedPrivateKey: string | null;
+    encryptionKeySalt: string | null;
+    encryptionKeyIv: string | null;
+    encryptionKeyVersion: string | null;
   }): SafeUser {
     return {
       id: user.id,
@@ -185,6 +192,51 @@ export class AuthService {
       friendLink: `${process.env.FRONTEND_URL ?? 'http://localhost:2616'}?friend=${user.friendCode}`,
       avatar: user.avatar,
       encryptionPublicKey: user.encryptionPublicKey,
+      encryptedPrivateKey: user.encryptedPrivateKey,
+      encryptionKeySalt: user.encryptionKeySalt,
+      encryptionKeyIv: user.encryptionKeyIv,
+      encryptionKeyVersion: user.encryptionKeyVersion,
+    };
+  }
+
+  private shouldUpdateEncryptionPackage(
+    user: {
+      encryptionPublicKey: string | null;
+      encryptedPrivateKey: string | null;
+      encryptionKeySalt: string | null;
+      encryptionKeyIv: string | null;
+      encryptionKeyVersion: string | null;
+    },
+    dto: UpdateEncryptionKeyDto | LoginDto,
+  ) {
+    if (!dto.encryptionPublicKey) {
+      return false;
+    }
+
+    return (
+      dto.encryptionPublicKey !== user.encryptionPublicKey ||
+      (dto.encryptedPrivateKey ?? null) !== user.encryptedPrivateKey ||
+      (dto.encryptionKeySalt ?? null) !== user.encryptionKeySalt ||
+      (dto.encryptionKeyIv ?? null) !== user.encryptionKeyIv ||
+      (dto.encryptionKeyVersion ?? 'v1') !== (user.encryptionKeyVersion ?? 'v1')
+    );
+  }
+
+  private buildEncryptionPackageData(
+    dto: UpdateEncryptionKeyDto | LoginDto,
+  ): {
+    encryptionPublicKey: string;
+    encryptedPrivateKey: string | null;
+    encryptionKeySalt: string | null;
+    encryptionKeyIv: string | null;
+    encryptionKeyVersion: string;
+  } {
+    return {
+      encryptionPublicKey: dto.encryptionPublicKey as string,
+      encryptedPrivateKey: dto.encryptedPrivateKey ?? null,
+      encryptionKeySalt: dto.encryptionKeySalt ?? null,
+      encryptionKeyIv: dto.encryptionKeyIv ?? null,
+      encryptionKeyVersion: dto.encryptionKeyVersion ?? 'v1',
     };
   }
 
